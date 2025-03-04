@@ -1,0 +1,14 @@
+# Backend (Spring Boot)
+/backend/target/
+/backend/.mvn/
+/backend/.idea/
+/backend/logs/
+/backend/*.log
+/backend/application.properties
+/backend/application.yml
+
+# Frontend (React)
+/frontend/node_modules/
+/frontend/build/
+/frontend/.env
+/frontend/.idea/
