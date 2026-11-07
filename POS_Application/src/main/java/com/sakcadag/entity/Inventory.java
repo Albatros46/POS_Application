@@ -23,7 +23,7 @@ public class Inventory {
 
     @NotNull(message = "Product is required")
     @OneToOne
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", unique = true)
     private Product product;
 
     @PositiveOrZero(message = "Stock quantity cannot be negative")

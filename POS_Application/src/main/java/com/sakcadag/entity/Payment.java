@@ -25,11 +25,11 @@ public class Payment {
 
     @NotNull(message = "Order is required")
     @OneToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", unique = true, nullable = false)
     private Order order;
 
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be greater than zero")
-    @Column(precision = 10, scale = 2)
+    @Column(precision = 12, scale = 2)
     private BigDecimal amount;
 }

@@ -1,13 +1,15 @@
 package com.sakcadag.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,18 +22,18 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Breaks the Order <-> OrderItem cycle on output; the order is still accepted on input.
-    @NotNull(message = "Order is required")
-    @JsonIgnoreProperties({"orderItems", "hibernateLazyInitializer", "handler"})
+    // Not serialized: the parent order already lists its items, and serializing the back-reference would create a cycle.
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @NotNull(message = "Product is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Positive(message = "Quantity must be greater than zero")
     private int quantity;
+
+    @Column(precision = 10, scale = 2, nullable = false)
+    private BigDecimal unitPrice;
 }
