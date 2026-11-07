@@ -4,6 +4,7 @@ import com.sakcadag.dto.RegisterRequest;
 import com.sakcadag.entity.*;
 
 import com.sakcadag.exception.BusinessRuleException;
+import com.sakcadag.exception.InvalidRequestException;
 import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.RoleRepository;
 import com.sakcadag.respository.UserRepository;
@@ -15,12 +16,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class UserServiceImpl implements IUserService {
+    // BCrypt only uses the first 72 bytes of a password, so anything longer would be silently truncated.
+    private static final int BCRYPT_MAX_PASSWORD_BYTES = 72;
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -31,6 +36,9 @@ public class UserServiceImpl implements IUserService {
     @Override
     @Transactional
     public User register(RegisterRequest request) {
+        if (request.password().getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_PASSWORD_BYTES) {
+            throw new InvalidRequestException("Password is too long");
+        }
         if (userRepository.findByUsername(request.username()).isPresent()) {
             throw new BusinessRuleException("Username already exists");
         }
