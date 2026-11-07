@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: POS_Application/pom.xml
+
+      - name: Run tests
+        working-directory: POS_Application
+        run: mvn -B test
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: surefire-reports
+          path: POS_Application/target/surefire-reports/
+
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: POS_Frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: POS_Frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: POS_Frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: POS_Frontend
+        run: npm run build
