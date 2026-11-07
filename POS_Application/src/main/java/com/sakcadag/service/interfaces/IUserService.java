@@ -1,12 +1,12 @@
 package com.sakcadag.service.interfaces;
 
+import com.sakcadag.dto.RegisterRequest;
 import com.sakcadag.entity.*;
 import java.util.List;
 
 public interface IUserService {
-    User saveUser(User user);
+    User register(RegisterRequest request);
     List<User> getAllUsers();
     User getUserById(Long id);
-    User updateUser(Long id, User user);
     void deleteUser(Long id);
 }

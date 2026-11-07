@@ -1,21 +1,46 @@
 package com.sakcadag.service.Impl;
 
+import com.sakcadag.dto.RegisterRequest;
 import com.sakcadag.entity.*;
 
+import com.sakcadag.exception.BusinessRuleException;
 import com.sakcadag.exception.ResourceNotFoundException;
+import com.sakcadag.respository.RoleRepository;
 import com.sakcadag.respository.UserRepository;
 import com.sakcadag.service.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserServiceImpl implements IUserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
-    public User saveUser(User user) {
+    @Transactional
+    public User register(RegisterRequest request) {
+        if (userRepository.findByUsername(request.username()).isPresent()) {
+            throw new BusinessRuleException("Username already exists");
+        }
+        Role cashier = roleRepository.findByName("CASHIER")
+                .orElseThrow(() -> new IllegalStateException("CASHIER role is missing"));
+
+        User user = new User();
+        user.setUsername(request.username());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRoles(new HashSet<>(Set.of(cashier)));
         return userRepository.save(user);
     }
 
@@ -31,16 +56,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public User updateUser(Long id, User user) {
-        User existing = getUserById(id);
-        existing.setUsername(user.getUsername());
-        existing.setPassword(user.getPassword());
-        existing.setRoles(user.getRoles());
-        return userRepository.save(existing);
-    }
-
-    @Override
+    @Transactional
     public void deleteUser(Long id) {
-        userRepository.delete(getUserById(id));
+        User user = getUserById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && user.getUsername().equals(authentication.getName())) {
+            throw new BusinessRuleException("You cannot delete your own account");
+        }
+        userRepository.delete(user);
     }
 }
