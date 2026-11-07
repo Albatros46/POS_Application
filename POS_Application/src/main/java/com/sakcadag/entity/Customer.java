@@ -39,7 +39,7 @@ public class Customer {
 
 
     @JsonIgnore
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY) //cascade = CascadeType.ALL: Eğer bir müşteri silinirse, ona bağlı tüm siparişler de silinir.
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
     public void fullNameMerge(){
         this.fullName=this.firstName+" "+this.lastName;
