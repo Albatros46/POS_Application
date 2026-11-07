@@ -1,4 +1,6 @@
 package com.sakcadag.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "customers")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +38,7 @@ public class Customer {
     private String phone;
 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY) //cascade = CascadeType.ALL: Eğer bir müşteri silinirse, ona bağlı tüm siparişler de silinir.
     private List<Order> orders = new ArrayList<>();
     public void fullNameMerge(){
