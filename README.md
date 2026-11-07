@@ -119,7 +119,16 @@ Requirements: Java 21, Maven (or the included `mvnw` wrapper), Node.js 22, Docke
    docker compose up -d
    ```
 
-2. Set the backend environment variables in the shell that runs Maven. Spring Boot does not read the `.env` file by itself. See `.env.example` for all variables.
+2. Give the backend its secrets. The simplest way, also for running `PosApplication` from an IDE, is a local file that Git ignores:
+
+   ```bash
+   cp POS_Application/config/local.properties.example POS_Application/config/local.properties
+   # then fill in the database password, a JWT secret and the first admin password
+   ```
+
+   Environment variables override this file. Without either, the start fails with `Could not resolve placeholder 'JWT_SECRET'`.
+
+   Alternatively, set the backend environment variables in the shell that runs Maven. Spring Boot does not read the `.env` file by itself. See `.env.example` for all variables.
 
    PowerShell:
 
