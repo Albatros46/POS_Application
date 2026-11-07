@@ -3,7 +3,9 @@ import com.sakcadag.entity.Order;
 import com.sakcadag.entity.OrderItem;
 import com.sakcadag.service.Impl.OrderServiceImpl;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,30 +20,23 @@ public class OrderController {
     private OrderServiceImpl orderService;
 
     @PostMapping("/new-order")
-    public Order createOrder(@RequestBody Order order) {
-        return orderService.saveOrder(order);
+    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.saveOrder(order));
     }
 
-    @GetMapping("getAllOrders")
+    @GetMapping("/getAllOrders")
     public List<Order> getAllOrders() {
         return orderService.getAllOrders();
     }
 
     @GetMapping("/getByIdOrder/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
-        return orderService.getOrderById(id)
-                .map(order -> ResponseEntity.ok().body(order))
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PutMapping("/updateOrder/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order order) {
-        try {
-            Order updatedOrder = orderService.updateOrder(id, order);
-            return ResponseEntity.ok(updatedOrder);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @Valid @RequestBody Order order) {
+        return ResponseEntity.ok(orderService.updateOrder(id, order));
     }
 
     @DeleteMapping("/delOrder/{id}")

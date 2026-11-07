@@ -2,6 +2,7 @@ package com.sakcadag.service.Impl;
 
 import com.sakcadag.entity.Order;
 import com.sakcadag.entity.OrderItem;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.OrderItemRepository;
 import com.sakcadag.respository.OrderRepository;
 import com.sakcadag.service.interfaces.IOrderService;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 @Service
 public class OrderServiceImpl implements IOrderService {
     @Autowired
@@ -27,32 +27,22 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
-    }
-/*
-    @Override
-    public Order updateOrder(Long id, Order order) {
+    public Order getOrderById(Long id) {
         return orderRepository.findById(id)
-                .map(existingOrder -> {
-                    order.setId(id);
-                    return orderRepository.save(order);
-                })
-                .orElseThrow(() -> new RuntimeException("Order with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
     }
-    */
+
+    // Order items are managed through the order-items endpoints, so only the order's own fields are copied here.
     @Override
     public Order updateOrder(Long id, Order orderDetails) {
-        return orderRepository.findById(id).map(order -> {
-            order.setCustomer(orderDetails.getCustomer());
-            order.setOrderDate(orderDetails.getOrderDate());
-            order.setOrderItems(orderDetails.getOrderItems());
-            return orderRepository.save(order);
-        }).orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+        Order existing = getOrderById(id);
+        existing.setCustomer(orderDetails.getCustomer());
+        existing.setOrderDate(orderDetails.getOrderDate());
+        return orderRepository.save(existing);
     }
     @Override
     public void deleteOrder(Long id) {
-        orderRepository.deleteById(id);
+        orderRepository.delete(getOrderById(id));
     }
     // **Müşteriye göre siparişleri listeleme**
     public List<Order> getOrdersByCustomer(Long customerId) {

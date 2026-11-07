@@ -2,13 +2,13 @@ package com.sakcadag.controller;
 
 import com.sakcadag.entity.OrderItem;
 import com.sakcadag.service.interfaces.IOrderItemService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/order-items")
@@ -18,16 +18,14 @@ public class OrderItemController {
     private IOrderItemService orderItemService;
 
     @PostMapping("/create")
-    public ResponseEntity<OrderItem> createOrderItem(@RequestBody OrderItem orderItem) {
+    public ResponseEntity<OrderItem> createOrderItem(@Valid @RequestBody OrderItem orderItem) {
         OrderItem savedItem = orderItemService.saveOrderItem(orderItem);
         return new ResponseEntity<>(savedItem, HttpStatus.CREATED);
     }
 
     @GetMapping("/getByIdOrderItem/{id}")
     public ResponseEntity<OrderItem> getOrderItemById(@PathVariable Long id) {
-        return orderItemService.getOrderItemById(id)
-                .map(ResponseEntity::ok)
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok(orderItemService.getOrderItemById(id));
     }
 
     @GetMapping("/getAllOrderItems")
@@ -37,7 +35,7 @@ public class OrderItemController {
     }
 
     @PutMapping("/updateOrderItem/{id}")
-    public ResponseEntity<OrderItem> updateOrderItem(@PathVariable Long id, @RequestBody OrderItem orderItem) {
+    public ResponseEntity<OrderItem> updateOrderItem(@PathVariable Long id, @Valid @RequestBody OrderItem orderItem) {
         OrderItem updatedItem = orderItemService.updateOrderItem(id, orderItem);
         return ResponseEntity.ok(updatedItem);
     }

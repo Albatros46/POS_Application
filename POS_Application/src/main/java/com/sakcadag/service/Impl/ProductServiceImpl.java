@@ -1,13 +1,13 @@
 package com.sakcadag.service.Impl;
 
 import com.sakcadag.entity.Product;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.ProductRepository;
 import com.sakcadag.service.interfaces.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements IProductService {
@@ -25,20 +25,22 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
     }
 
     @Override
     public Product updateProduct(Long id, Product product) {
-           return productRepository.findById(id).map(existingProduct->{
-               product.setId(id);
-               return productRepository.save(product);
-           }).orElseThrow(()->new RuntimeException("Product with id "+id+" not found!"));
+        Product existing = getProductById(id);
+        existing.setName(product.getName());
+        existing.setPrice(product.getPrice());
+        existing.setCategory(product.getCategory());
+        return productRepository.save(existing);
     }
 
     @Override
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        productRepository.delete(getProductById(id));
     }
 }

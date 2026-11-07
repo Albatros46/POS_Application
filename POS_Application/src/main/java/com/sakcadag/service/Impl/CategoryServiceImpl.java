@@ -1,13 +1,13 @@
 package com.sakcadag.service.Impl;
 
 import com.sakcadag.entity.Category;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.CategoryRepository;
 import com.sakcadag.service.interfaces.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService {
@@ -25,21 +25,20 @@ public class CategoryServiceImpl implements ICategoryService {
     }
 
     @Override
-    public Optional<Category> getCategoryById(Long id) {
-        return categoryRepository.findById(id);
+    public Category getCategoryById(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", id));
     }
 
     @Override
     public Category updateCategory(Long id, Category category) {
-            return categoryRepository.findById(id)
-                .map(existingCategory->{
-                    category.setId(id);
-                    return categoryRepository.save(category);
-                }).orElseThrow(()->new RuntimeException("Category with id "+id+" not found!"));
+        Category existing = getCategoryById(id);
+        existing.setName(category.getName());
+        return categoryRepository.save(existing);
     }
 
     @Override
     public void deleteCategory(Long id) {
-        categoryRepository.deleteById(id);
+        categoryRepository.delete(getCategoryById(id));
     }
 }

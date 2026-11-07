@@ -1,14 +1,17 @@
 package com.sakcadag.controller;
 import com.sakcadag.entity.Category;
 import com.sakcadag.entity.Product;
+import com.sakcadag.exception.InvalidRequestException;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.CategoryRepository;
-import com.sakcadag.service.interfaces.ICategoryService;
 import com.sakcadag.service.interfaces.IProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -18,14 +21,20 @@ public class ProductController {
     @Autowired
     private CategoryRepository categoryRepository;
     @PostMapping("/new-product")
-    public Product createProduct(@RequestBody Product product) {
-       // return productService.saveProduct(product); //bu sekilde category kismi null geliyor.
-        // Kategoriyi veritabanından al ve eksik bilgileri tamamla
-        Category category = categoryRepository.findById(product.getCategory().getId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
+        resolveCategory(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.saveProduct(product));
+    }
 
+    private void resolveCategory(Product product) {
+        Category requested = product.getCategory();
+        Long categoryId = requested == null ? null : requested.getId();
+        if (categoryId == null) {
+            throw new InvalidRequestException("Category id is required");
+        }
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", categoryId));
         product.setCategory(category);
-        return productService.saveProduct(product);
     }
 
     @GetMapping("/getAllProduct")
@@ -34,17 +43,19 @@ public class ProductController {
     }
 
     @GetMapping("/getByIdProduct/{id}")
-    public Optional<Product> getProductById(@PathVariable Long id) {
+    public Product getProductById(@PathVariable Long id) {
         return productService.getProductById(id);
     }
 
     @PutMapping("/updateProduct/{id}")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody Product product) {
+        resolveCategory(product);
         return productService.updateProduct(id, product);
     }
 
     @DeleteMapping("/delProduct/{id}")
-    public void deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
     }
 }

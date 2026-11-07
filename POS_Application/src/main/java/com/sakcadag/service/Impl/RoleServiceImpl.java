@@ -1,13 +1,13 @@
 package com.sakcadag.service.Impl;
 
 import com.sakcadag.entity.Role;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.RoleRepository;
 import com.sakcadag.service.interfaces.IRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 @Service
 public class RoleServiceImpl implements IRoleService {
     @Autowired
@@ -24,22 +24,20 @@ public class RoleServiceImpl implements IRoleService {
     }
 
     @Override
-    public Optional<Role> getRoleById(Long id) {
-        return roleRepository.findById(id);
+    public Role getRoleById(Long id) {
+        return roleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Role", id));
     }
 
     @Override
     public Role updateRole(Long id, Role role) {
-        return roleRepository.findById(id)
-                .map(existingRole -> {
-                    role.setId(id);
-                    return roleRepository.save(role);
-                })
-                .orElseThrow(() -> new RuntimeException("Role with id " + id + " not found"));
+        Role existing = getRoleById(id);
+        existing.setName(role.getName());
+        return roleRepository.save(existing);
     }
 
     @Override
     public void deleteRole(Long id) {
-        roleRepository.deleteById(id);
+        roleRepository.delete(getRoleById(id));
     }
 }

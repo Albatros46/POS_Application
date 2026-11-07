@@ -1,13 +1,13 @@
 package com.sakcadag.service.Impl;
 
 import com.sakcadag.entity.Inventory;
+import com.sakcadag.exception.ResourceNotFoundException;
 import com.sakcadag.respository.InventoryRepository;
 import com.sakcadag.service.interfaces.IInventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class InventoryServiceImpl implements IInventoryService {
@@ -25,26 +25,21 @@ public class InventoryServiceImpl implements IInventoryService {
     }
 
     @Override
-    public Optional<Inventory> getInventoryById(Long id) {
-        return repository.findById(id);
+    public Inventory getInventoryById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", id));
     }
 
     @Override
     public Inventory updateInventory(Long id, Inventory inventory) {
-        return repository.findById(id)
-                .map(existingInventory -> {
-                    inventory.setId(id);
-                    return repository.save(inventory);
-                })
-                .orElseThrow(() -> new RuntimeException("Inventory with id " + id + " not found"));
+        Inventory existing = getInventoryById(id);
+        existing.setProduct(inventory.getProduct());
+        existing.setStockQuantity(inventory.getStockQuantity());
+        return repository.save(existing);
     }
 
     @Override
     public void deleteInventory(Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-        } else {
-            throw new RuntimeException("Inventory with id " + id + " not found");
-        }
+        repository.delete(getInventoryById(id));
     }
 }
