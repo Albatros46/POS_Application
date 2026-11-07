@@ -1,8 +1,9 @@
 package com.sakcadag.controller;
+
+import com.sakcadag.dto.CreateOrderRequest;
 import com.sakcadag.entity.Order;
 import com.sakcadag.entity.OrderItem;
-import com.sakcadag.service.Impl.OrderServiceImpl;
-
+import com.sakcadag.service.interfaces.IOrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,11 +18,16 @@ import java.util.List;
 public class OrderController {
 
     @Autowired
-    private OrderServiceImpl orderService;
+    private IOrderService orderService;
 
     @PostMapping("/new-order")
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.saveOrder(order));
+    public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.placeOrder(request));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Order> cancelOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
     }
 
     @GetMapping("/getAllOrders")
@@ -32,17 +38,6 @@ public class OrderController {
     @GetMapping("/getByIdOrder/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
-    }
-
-    @PutMapping("/updateOrder/{id}")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @Valid @RequestBody Order order) {
-        return ResponseEntity.ok(orderService.updateOrder(id, order));
-    }
-
-    @DeleteMapping("/delOrder/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        orderService.deleteOrder(id);
-        return ResponseEntity.noContent().build();
     }
 
     // **Müşteriye göre siparişleri listeleme**
