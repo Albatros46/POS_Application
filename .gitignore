@@ -17,3 +17,6 @@ POS_Frontend/dist/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local backend settings with secrets
+POS_Application/config/local.properties

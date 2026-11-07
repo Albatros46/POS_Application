@@ -1,0 +1,7 @@
+# Copy this file to config/local.properties (not committed) and fill in the values.
+# Environment variables (DB_PASSWORD, JWT_SECRET, ...) still win over this file.
+spring.datasource.password=
+# at least 32 bytes, e.g. `openssl rand -hex 32`
+app.jwt.secret=
+app.admin.username=admin
+app.admin.password=
